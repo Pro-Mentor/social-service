@@ -1,5 +1,12 @@
 # social-service
 
+## swagger url
+
+http://sltc.app.promentor.local:8084/api/v1/social/apis
+
+
+## Framework
+
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
