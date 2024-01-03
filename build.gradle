@@ -9,6 +9,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    implementation 'io.quarkus:quarkus-mongodb-panache'
     implementation 'io.quarkus:quarkus-smallrye-reactive-messaging-rabbitmq'
     implementation 'io.quarkus:quarkus-smallrye-openapi'
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
@@ -16,6 +18,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-resteasy-reactive'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 }
 
 group 'com.github.promentor'
