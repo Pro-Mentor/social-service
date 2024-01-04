@@ -5,6 +5,7 @@ import com.github.promentor.mappers.UserMapper;
 import com.github.promentor.rabbitmq.model.UserCreated;
 import com.github.promentor.utils.IncomingMessageConverter;
 import io.quarkus.logging.Log;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -25,7 +26,7 @@ public class UserCreatedConsumer {
     }
 
     @Incoming("user-created")
-    public CompletionStage<Void> consume(Message<byte[]> message) {
+    public Uni<CompletionStage<Void>> consume(Message<byte[]> message) {
         Log.info("message reserved in \"user-created\"");
 
         JsonObject jsonPayload = IncomingMessageConverter.getMessageFromByteStream(message.getPayload());
@@ -33,8 +34,7 @@ public class UserCreatedConsumer {
 
         UserCreated userCreated = jsonPayload.mapTo(UserCreated.class);
 
-        this.userAccess.createUser(this.userMapper.toUserDAO(userCreated));
-
-        return message.ack();
+        return this.userAccess.createUser(this.userMapper.toUserDAO(userCreated))
+                .onItem().transform(item -> message.ack());
     }
 }
