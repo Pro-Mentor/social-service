@@ -13,6 +13,14 @@ public enum ErrorCode {
         public String toString() {
             return "Unknown Error";
         }
+    },
+
+    /**
+     * This code indicates the given input not valid.
+     */
+    INPUT_VALIDATION_ERROR("E-0001") {
+        @Override
+        public String toString() { return "The given input is not valid"; }
     };
 
     private final String errorCode;

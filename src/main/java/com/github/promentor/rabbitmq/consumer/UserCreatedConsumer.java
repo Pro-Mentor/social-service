@@ -1,6 +1,6 @@
 package com.github.promentor.rabbitmq.consumer;
 
-import com.github.promentor.data.access.UserAccess;
+import com.github.promentor.data.repository.UserRepository;
 import com.github.promentor.mappers.UserMapper;
 import com.github.promentor.rabbitmq.model.UserCreated;
 import com.github.promentor.utils.IncomingMessageConverter;
@@ -16,13 +16,13 @@ import java.util.concurrent.CompletionStage;
 @ApplicationScoped
 public class UserCreatedConsumer {
 
-    private final UserAccess userAccess;
-
     private final UserMapper userMapper;
 
-    public UserCreatedConsumer(UserAccess userAccess, UserMapper userMapper) {
-        this.userAccess = userAccess;
+    private final UserRepository userRepository;
+
+    public UserCreatedConsumer(UserMapper userMapper, UserRepository userRepository) {
         this.userMapper = userMapper;
+        this.userRepository = userRepository;
     }
 
     @Incoming("user-created")
@@ -34,7 +34,7 @@ public class UserCreatedConsumer {
 
         UserCreated userCreated = jsonPayload.mapTo(UserCreated.class);
 
-        return this.userAccess.createUser(this.userMapper.toUserDAO(userCreated))
+        return this.userRepository.persist(this.userMapper.toUserDAO(userCreated))
                 .onItem().transform(item -> message.ack());
     }
 }

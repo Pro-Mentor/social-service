@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 /**
  * This is a Global Exception Mapper to Centralize error handling
+ * Converts Exception into a structured error response.
  * return error with response with following format
  *  {
  *     "message": "String",
@@ -23,15 +24,29 @@ import java.util.Arrays;
 @Provider
 public class ErrorPageResponseExceptionMapper implements ExceptionMapper<Exception> {
 
+    /**
+     * Handles the Exception and converts it into a formatted response.
+     * Logs the error and debug information.
+     *
+     * @param exception The Exception caught by the mapper.
+     * @return Response containing the formatted error message and status code.
+     */
     @Override
     public Response toResponse(Exception exception) {
         Log.error("From Global Exception Mapper : " + exception);
         Log.debug(Arrays.toString(exception.getStackTrace()));
 
+        // Convert the exception to a formatted response
         return mapExceptionToResponse(exception);
     }
 
-    // format the response error message
+    /**
+     * Formats the Exception into a structured error response.
+     * Logs the error response and its details.
+     *
+     * @param exception The Exception caught by the mapper.
+     * @return Response containing the formatted error message and status code.
+     */
     private Response mapExceptionToResponse(Exception exception) {
         Log.debug("In the global exception mapper");
 
