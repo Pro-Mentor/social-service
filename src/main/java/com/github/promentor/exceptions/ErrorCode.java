@@ -21,6 +21,22 @@ public enum ErrorCode {
     INPUT_VALIDATION_ERROR("E-0001") {
         @Override
         public String toString() { return "The given input is not valid"; }
+    },
+
+    /**
+     * This code indicates the given id is not a valid ID
+     */
+    INVALID_OBJECT("E-0002") {
+        @Override
+        public String toString() { return "Given ID is not valid"; }
+    },
+
+    /**
+     * This code indicates that the requested post not found
+     */
+    POST_NOT_FOUND("E-0010") {
+        @Override
+        public String toString() { return "Post Not Found"; }
     };
 
     private final String errorCode;

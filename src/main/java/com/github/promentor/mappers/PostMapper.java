@@ -3,10 +3,8 @@ package com.github.promentor.mappers;
 import com.github.promentor.data.domain.PostDAO;
 import com.github.promentor.web.dto.PostCreateDTO;
 import com.github.promentor.web.dto.PostGetDTO;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.mapstruct.ReportingPolicy;
+import com.github.promentor.web.dto.PostUpdateDTO;
+import org.mapstruct.*;
 
 @Mapper(
         componentModel = "cdi",
@@ -19,5 +17,9 @@ public interface PostMapper {
 
     @Mapping(target = "id", expression = "java(postDAO.id.toString())")
     PostGetDTO toPostGetDTO(PostDAO postDAO);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "updatedAt", expression = "java(java.time.Instant.now())")
+    void merge(@MappingTarget PostDAO target, PostUpdateDTO source);
 
 }
