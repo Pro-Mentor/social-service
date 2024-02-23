@@ -9,8 +9,9 @@ public class PostDAO extends AuditableEntity {
     public ObjectId id;
     public String description;
     public String imageUrl;
-
-
+    public String createdBy;
+    public String createdById;
+    public UserDAO owner;
 
     public PostDAO() {
         super();
@@ -28,6 +29,8 @@ public class PostDAO extends AuditableEntity {
                 "id=" + id +
                 ", description='" + description + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
+                ", createdBy='" + createdBy + '\'' +
+                ", createdById='" + createdById + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

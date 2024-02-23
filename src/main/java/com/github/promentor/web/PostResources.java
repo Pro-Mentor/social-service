@@ -11,8 +11,10 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -95,12 +97,12 @@ public class PostResources {
             ),
 
     })
-    public Uni<Response> createdPost(@Valid PostCreateDTO postCreateDTO) {
+    public Uni<Response> createdPost(@Valid PostCreateDTO postCreateDTO, @Context SecurityContext sec) {
         Log.info("reserved request to create post");
         Log.debug("request reserved: " + postCreateDTO);
 
         return this.postResources
-                .createdPost(postCreateDTO)
+                .createdPost(postCreateDTO, sec.getUserPrincipal())
                 .onItem()
                 .transform(id -> {
                     Log.info("create post with id: " + id);
@@ -141,12 +143,16 @@ public class PostResources {
                             mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
             ),
     })
-    public Uni<Response> updatePost(@PathParam("post-id") String postId, @Valid PostUpdateDTO postUpdateDTO) {
+    public Uni<Response> updatePost(
+            @PathParam("post-id") String postId,
+            @Valid PostUpdateDTO postUpdateDTO,
+            @Context SecurityContext sec
+    ) {
         Log.info("reserved request to update post: " + postId);
         Log.debug("request reserved: " + postUpdateDTO);
 
         return this.postResources
-                .updatePostById(postId, postUpdateDTO)
+                .updatePostById(postId, postUpdateDTO, sec.getUserPrincipal())
                 .onItem()
                 .transform(post -> {
                     Log.info("updated post with id: " + postId);

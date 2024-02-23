@@ -7,6 +7,9 @@ public record PostGetDTO(
         String description,
         String imageUrl,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        String createdBy,
+        String createdById,
+        UserGetDTO owner
 ) {
 }

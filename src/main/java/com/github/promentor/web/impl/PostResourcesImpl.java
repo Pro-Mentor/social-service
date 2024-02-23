@@ -1,8 +1,11 @@
 package com.github.promentor.web.impl;
 
+import com.github.promentor.data.domain.PostDAO;
 import com.github.promentor.data.repository.PostRepository;
+import com.github.promentor.data.repository.UserRepository;
 import com.github.promentor.exceptions.ErrorCode;
 import com.github.promentor.exceptions.custom.InvalidUUID;
+import com.github.promentor.exceptions.custom.NotAuthorizeException;
 import com.github.promentor.exceptions.custom.NotFoundException;
 import com.github.promentor.mappers.PostMapper;
 import com.github.promentor.utils.IdConverter;
@@ -13,16 +16,20 @@ import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.security.Principal;
+
 @ApplicationScoped
 public class PostResourcesImpl {
 
     private final PostMapper postMapper;
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
-    public PostResourcesImpl(PostMapper postMapper, PostRepository postRepository) {
+    public PostResourcesImpl(PostMapper postMapper, PostRepository postRepository, UserRepository userRepository) {
         this.postMapper = postMapper;
         this.postRepository = postRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -47,12 +54,21 @@ public class PostResourcesImpl {
      * @param postCreateDTO details want to create a post
      * @return id of the created object
      */
-    public Uni<String> createdPost(PostCreateDTO postCreateDTO) {
+    public Uni<String> createdPost(PostCreateDTO postCreateDTO, Principal principal) {
         Log.debug("reserved: " + postCreateDTO);
 
-        return this.postRepository.persist(this.postMapper.toPostDAO(postCreateDTO))
-                .onItem()
-                .transform(postDAO -> postDAO.id.toString());
+        PostDAO post = this.postMapper.toPostDAO(postCreateDTO);
+        post.createdBy = principal.getName();
+
+        return this.userRepository.findByUsername(principal.getName())
+                .onItem().transformToUni(userDAO -> {
+                    userDAO.ifPresent(dao -> post.owner = dao);
+
+                    return this.postRepository.persist(post)
+                            .onItem()
+                            .transform(postDAO -> postDAO.id.toString());
+                });
+
     }
 
     /**
@@ -61,7 +77,7 @@ public class PostResourcesImpl {
      * @param postUpdateDTO details want to update
      * @return updated post
      */
-    public Uni<PostGetDTO> updatePostById(String postId, PostUpdateDTO postUpdateDTO) {
+    public Uni<PostGetDTO> updatePostById(String postId, PostUpdateDTO postUpdateDTO, Principal principal) {
         Log.debug("reserved request to update: " + postId + " as: " + postUpdateDTO);
 
         return this.postRepository
@@ -70,6 +86,10 @@ public class PostResourcesImpl {
                 .onItem()
                 .transformToUni(postDAO -> {
                     Log.debug("available post: " + postDAO);
+
+                    if (!postDAO.createdBy.equals(principal.getName())) {
+                        return Uni.createFrom().failure(new NotAuthorizeException(ErrorCode.NOT_POST_OWNER));
+                    }
 
                     this.postMapper.merge(postDAO, postUpdateDTO);
 

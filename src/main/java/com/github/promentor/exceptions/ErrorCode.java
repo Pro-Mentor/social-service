@@ -53,6 +53,14 @@ public enum ErrorCode {
     POST_NOT_FOUND("E-0010") {
         @Override
         public String toString() { return "Post Not Found"; }
+    },
+
+    /**
+     * This code indicates that the requested post is not a requested user post
+     */
+    NOT_POST_OWNER("E-0010") {
+        @Override
+        public String toString() { return "Don't have access to update the post."; }
     };
 
     private final String errorCode;
