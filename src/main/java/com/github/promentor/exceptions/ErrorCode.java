@@ -32,6 +32,22 @@ public enum ErrorCode {
     },
 
     /**
+     * This code indicates the authorization issue.
+     */
+    AUTHENTICATION_FAILED("E-0003") {
+        @Override
+        public String toString() { return "Authorization Failed"; }
+    },
+
+    /**
+     * This code indicates the forbidden issue.
+     */
+    FORBIDDEN("E-0004") {
+        @Override
+        public String toString() { return "Forbidden. Don't have access"; }
+    },
+
+    /**
      * This code indicates that the requested post not found
      */
     POST_NOT_FOUND("E-0010") {

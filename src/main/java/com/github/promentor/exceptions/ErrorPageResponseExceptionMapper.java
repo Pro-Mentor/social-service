@@ -1,6 +1,8 @@
 package com.github.promentor.exceptions;
 
 import io.quarkus.logging.Log;
+import io.quarkus.security.AuthenticationFailedException;
+import io.quarkus.security.UnauthorizedException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;

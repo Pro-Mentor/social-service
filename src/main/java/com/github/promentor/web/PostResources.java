@@ -7,6 +7,7 @@ import com.github.promentor.web.dto.PostUpdateDTO;
 import com.github.promentor.web.impl.PostResourcesImpl;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -16,7 +17,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
@@ -25,6 +26,7 @@ import java.net.URI;
 @Tag(name = "Post", description = "Describe the functionalities related to Post")
 @Path("/posts")
 @ApplicationScoped
+//@Authenticated
 public class PostResources {
 
     private final PostResourcesImpl postResources;
@@ -70,6 +72,7 @@ public class PostResources {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"user"})
     @Operation(operationId = "createPost", summary = "create a post", description = "create a post")
     @APIResponses( value = {
             @APIResponse(
@@ -83,7 +86,14 @@ public class PostResources {
                     description = "Invalid Request",
                     content =  @Content(
                             mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
-            )
+            ),
+            @APIResponse(
+                    responseCode = "403",
+                    description = "Forbidden",
+                    content =  @Content(
+                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
+            ),
+
     })
     public Uni<Response> createdPost(@Valid PostCreateDTO postCreateDTO) {
         Log.info("reserved request to create post");
@@ -102,6 +112,7 @@ public class PostResources {
     @Path("/{post-id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"user"})
     @Parameter(name = "post-id", description = "unique id of the post", required = true)
     @Operation(operationId = "updatePost", summary = "update a post", description = "update a post")
     @APIResponses( value = {
@@ -122,7 +133,13 @@ public class PostResources {
                     description = "Invalid Request",
                     content =  @Content(
                             mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
-            )
+            ),
+            @APIResponse(
+                    responseCode = "403",
+                    description = "Forbidden",
+                    content =  @Content(
+                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
+            ),
     })
     public Uni<Response> updatePost(@PathParam("post-id") String postId, @Valid PostUpdateDTO postUpdateDTO) {
         Log.info("reserved request to update post: " + postId);
