@@ -38,6 +38,18 @@ public class PostResources {
     }
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getPosts", summary = "get posts", description = "get a post with pagination")
+    public Uni<Response> getAllPost(@QueryParam("page-index") int pageIndex, @QueryParam("page-size") int pageSize) {
+        Log.info("reserved request to get posts");
+        Log.debug("reserved request to get the post with pageIndex: " + pageIndex + ", pageSize: " + pageSize);
+
+        return this.postResources
+                .getAllPost(pageIndex, pageSize)
+                .map(postGetDTOList -> Response.ok(postGetDTOList).build());
+    }
+
+    @GET
     @Path("/{post-id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getPostById", summary = "get a post", description = "get a post by post id")

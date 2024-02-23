@@ -13,10 +13,12 @@ import com.github.promentor.web.dto.PostCreateDTO;
 import com.github.promentor.web.dto.PostGetDTO;
 import com.github.promentor.web.dto.PostUpdateDTO;
 import io.quarkus.logging.Log;
+import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.security.Principal;
+import java.util.List;
 
 @ApplicationScoped
 public class PostResourcesImpl {
@@ -46,6 +48,16 @@ public class PostResourcesImpl {
                 .findById(IdConverter.getObjectId(postId))
                 .onItem().ifNull().failWith(new NotFoundException(ErrorCode.POST_NOT_FOUND))
                 .onItem().transform(this.postMapper::toPostGetDTO);
+
+    }
+
+    public Uni<List<PostGetDTO>> getAllPost(int pageIndex, int pageSize) {
+
+        return postRepository
+                .findAll(Sort.by("updatedAt").descending())
+                .page(pageIndex, pageSize)
+                .stream().onItem().transform(this.postMapper::toPostGetDTO)
+                .collect().asList();
 
     }
 
