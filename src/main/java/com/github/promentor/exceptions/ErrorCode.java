@@ -60,7 +60,7 @@ public enum ErrorCode {
      */
     NOT_POST_OWNER("E-0010") {
         @Override
-        public String toString() { return "Don't have access to update the post."; }
+        public String toString() { return "Don't have access to modify the post."; }
     };
 
     private final String errorCode;

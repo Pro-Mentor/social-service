@@ -98,4 +98,22 @@ public class PostResourcesImpl {
                 }).onItem().transform(this.postMapper::toPostGetDTO);
     }
 
+    public Uni<Void> deletePostById(String postId, Principal principal) {
+        Log.debug("reserved request to delete: " + postId );
+
+        return this.postRepository
+                .findById(IdConverter.getObjectId(postId))
+                .onItem().ifNull().failWith(new NotFoundException(ErrorCode.POST_NOT_FOUND))
+                .onItem()
+                .transformToUni(postDAO -> {
+                    Log.debug("available post: " + postDAO);
+
+                    if (!postDAO.createdBy.equals(principal.getName())) {
+                        return Uni.createFrom().failure(new NotAuthorizeException(ErrorCode.NOT_POST_OWNER));
+                    }
+
+                    return postRepository.delete(postDAO);
+                });
+    }
+
 }

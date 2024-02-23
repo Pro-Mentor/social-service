@@ -162,4 +162,25 @@ public class PostResources {
 
     }
 
+    @DELETE
+    @Path("/{post-id}")
+    @RolesAllowed({"user"})
+    @Parameter(name = "post-id", description = "unique id of the post", required = true)
+    @Operation(operationId = "deletePost", summary = "delete a post", description = "delete a post")
+    public Uni<Response> deletePost(
+            @PathParam("post-id") String postId,
+            @Context SecurityContext sec
+    ) {
+        Log.info("reserved request to delete post: " + postId);
+
+        return this.postResources
+                .deletePostById(postId, sec.getUserPrincipal())
+                .onItem()
+                .transform(response -> {
+                    Log.info("deleted post with id: " + postId);
+                    return Response.ok().build();
+                });
+    }
+
+
 }
