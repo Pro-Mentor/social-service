@@ -1,37 +1,49 @@
 package com.github.promentor.web.impl;
 
+import com.github.promentor.data.domain.PostComment;
 import com.github.promentor.data.domain.PostDAO;
-import com.github.promentor.data.repository.PostRepository;
-import com.github.promentor.data.repository.UserRepository;
+import com.github.promentor.data.domain.PostLike;
+import com.github.promentor.data.domain.PostLikeCount;
+import com.github.promentor.data.repository.*;
 import com.github.promentor.exceptions.ErrorCode;
 import com.github.promentor.exceptions.custom.InvalidUUID;
 import com.github.promentor.exceptions.custom.NotAuthorizeException;
 import com.github.promentor.exceptions.custom.NotFoundException;
+import com.github.promentor.mappers.PostCommentMapper;
 import com.github.promentor.mappers.PostMapper;
 import com.github.promentor.utils.IdConverter;
-import com.github.promentor.web.dto.PostCreateDTO;
-import com.github.promentor.web.dto.PostGetDTO;
-import com.github.promentor.web.dto.PostUpdateDTO;
+import com.github.promentor.web.dto.*;
 import io.quarkus.logging.Log;
 import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.bson.types.ObjectId;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class PostResourcesImpl {
 
     private final PostMapper postMapper;
+    private final PostCommentMapper postCommentMapper;
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final PostLikeCountRepository postLikeCountRepository;
+    private final PostCommentRepository postCommentRepository;
 
-    public PostResourcesImpl(PostMapper postMapper, PostRepository postRepository, UserRepository userRepository) {
+    public PostResourcesImpl(PostMapper postMapper, PostCommentMapper postCommentMapper, PostRepository postRepository, UserRepository userRepository, PostLikeRepository postLikeRepository, PostLikeCountRepository postLikeCountRepository, PostCommentRepository postCommentRepository) {
         this.postMapper = postMapper;
+        this.postCommentMapper = postCommentMapper;
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.postLikeRepository = postLikeRepository;
+        this.postLikeCountRepository = postLikeCountRepository;
+        this.postCommentRepository = postCommentRepository;
     }
 
     /**
@@ -41,23 +53,111 @@ public class PostResourcesImpl {
      * @throws NotFoundException if the post not available with given id
      * @throws InvalidUUID if the give id is not a valid id
      */
-    public Uni<PostGetDTO> getPostById(String postId) {
+    public Uni<PostGetDTO> getPostById(String postId, Principal principal) {
         Log.debug("reserved request to get the post by id: " + postId);
 
+        ObjectId postObjectId = IdConverter.getObjectId(postId);
+
         return postRepository
-                .findById(IdConverter.getObjectId(postId))
+                .findById(postObjectId)
                 .onItem().ifNull().failWith(new NotFoundException(ErrorCode.POST_NOT_FOUND))
-                .onItem().transform(this.postMapper::toPostGetDTO);
+                .onItem().transform(this.postMapper::toPostGetDTO)
+                .onItem().transformToUni(postGetDTO -> setLikeCountOfPost(postObjectId, postGetDTO))
+                .onItem().transformToUni(postGetDTO -> setLikeByMe(postObjectId, postGetDTO, principal));
 
     }
 
-    public Uni<List<PostGetDTO>> getAllPost(int pageIndex, int pageSize) {
+    public Uni<CommentGetDTO> getCommentById(String commentId) {
+        Log.debug("reserved request to get the comment by id: " + commentId);
+
+        return postCommentRepository
+                .findById(IdConverter.getObjectId(commentId))
+                .onItem().ifNull().failWith(new NotFoundException(ErrorCode.COMMENT_NOT_FOUND))
+                .onItem().transform(this.postCommentMapper::toCommentGetDTO);
+
+    }
+
+    public Uni<List<CommentGetDTO>> getCommentsOfPost(String postId, int pageIndex, int pageSize) {
+
+        ObjectId postObjectId = IdConverter.getObjectId(postId);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("postId", postObjectId);
+
+        return postCommentRepository
+                .find("postId = :postId", Sort.by("updatedAt").descending(), params)
+                .page(pageIndex, pageSize)
+                .stream().onItem().transform(this.postCommentMapper::toCommentGetDTO)
+                .collect().asList();
+
+    }
+
+    public Uni<List<PostGetDTO>> getAllPost(int pageIndex, int pageSize, Principal principal) {
 
         return postRepository
                 .findAll(Sort.by("updatedAt").descending())
                 .page(pageIndex, pageSize)
-                .stream().onItem().transform(this.postMapper::toPostGetDTO)
+                .stream()
+                .onItem().transformToUni(post -> {
+                    Log.debug("reserved post: " + post);
+
+                    PostGetDTO postGetDTO = this.postMapper.toPostGetDTO(post);
+                    Log.debug("converted postGetDTO: " + postGetDTO);
+
+                    return setLikeCountOfPost(post.id, postGetDTO)
+                            .onItem().transformToUni(postGetDTO1 -> setLikeByMe(post.id, postGetDTO1, principal));
+
+                })
+                .concatenate()
                 .collect().asList();
+
+    }
+
+    public Uni<Void> likeChangeOnPost(String postId, Principal principal) {
+        Log.debug("reserved like on postId: " + postId);
+
+        ObjectId postObjectId = IdConverter.getObjectId(postId);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("postId", postObjectId);
+        params.put("username", principal.getName());
+
+        return this.postLikeRepository
+                .findPostByPostIdAndUserId(
+                        postObjectId,
+                        principal.getName()
+                )
+                .onItem().transformToUni(postLike -> {
+                    if (postLike.isEmpty()) {
+                        return persistPostLike(postObjectId, principal.getName())
+                                .onItem().transformToUni(unused ->
+                                    this.postLikeCountRepository
+                                            .findById(postObjectId)
+                                            .onItem().transformToUni(postLikeCount -> addPostLikeCount(postLikeCount, postObjectId))
+                                ).replaceWithVoid();
+                    } else {
+                        return postLikeRepository
+                                .delete(postLike.get())
+                                .onItem().transformToUni(unused ->
+                                        this.postLikeCountRepository
+                                                .findById(postObjectId)
+                                                .onItem().transformToUni(this::removePostLikeCount)
+                                ).replaceWithVoid();
+                    }
+                });
+
+    }
+
+    public Uni<String> updateOnPost(String postId, CreateCommentDTO createCommentDTO, Principal principal) {
+        Log.debug("reserved like on postId: " + postId + ", createCommentDTO: " + createCommentDTO);
+
+        return this.postCommentRepository
+                .persist(new PostComment(
+                        IdConverter.getObjectId(postId),
+                        principal.getName(),
+                        createCommentDTO.comment()
+                ))
+                .onItem().transform(postComment -> postComment.id.toString());
 
     }
 
@@ -126,6 +226,63 @@ public class PostResourcesImpl {
 
                     return postRepository.delete(postDAO);
                 });
+    }
+
+    /**
+     * This is used to set the like count of the given post
+     * @param postId ObjectId of the post
+     * @param postGetDTO the post object we want to set the like count
+     * @return the PostGetDTO that contain the like count of that post
+     */
+    private Uni<PostGetDTO> setLikeCountOfPost(ObjectId postId, PostGetDTO postGetDTO) {
+
+        return this.postLikeCountRepository.findById(postId)
+                .onItem().transform(postLikeCount -> {
+                    Log.debug("reserved PostLikeCount: " + postLikeCount);
+
+                    // if there is a postLikeCount for the post return the like count
+                    // if not return the 0
+                    postGetDTO.setNumberOfLikes(postLikeCount != null ? postLikeCount.count : 0);
+
+                    return postGetDTO;
+                });
+    }
+
+    private Uni<PostGetDTO> setLikeByMe(ObjectId postId, PostGetDTO postGetDTO, Principal principal) {
+
+        if (principal != null) {
+
+            return this.postLikeRepository
+                    .findPostByPostIdAndUserId(
+                            postId,
+                            principal.getName()
+                    ).onItem().transform(postLike -> {
+                        postGetDTO.setLikedByMe(postLike.isPresent());
+                return postGetDTO;
+            });
+        }
+
+        postGetDTO.setLikedByMe(false);
+        return Uni.createFrom().item(postGetDTO);
+    }
+
+    private Uni<PostLike> persistPostLike(ObjectId postId, String username) {
+        return postLikeRepository
+                .persist(new PostLike(postId, username));
+    }
+
+    private Uni<PostLikeCount> addPostLikeCount(PostLikeCount postLikeCount, ObjectId postId) {
+        if (postLikeCount == null) {
+            postLikeCount = new PostLikeCount(postId);
+            return this.postLikeCountRepository.persist(postLikeCount);
+        }
+        postLikeCount.addLike();
+        return this.postLikeCountRepository.update(postLikeCount);
+    }
+
+    private Uni<PostLikeCount> removePostLikeCount(PostLikeCount postLikeCount) {
+        postLikeCount.removeLike();
+        return this.postLikeCountRepository.update(postLikeCount);
     }
 
 }

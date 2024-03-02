@@ -58,10 +58,18 @@ public enum ErrorCode {
     /**
      * This code indicates that the requested post is not a requested user post
      */
-    NOT_POST_OWNER("E-0010") {
+    NOT_POST_OWNER("E-0011") {
         @Override
         public String toString() { return "Don't have access to modify the post."; }
-    };
+    },
+
+    /**
+     * This code indicates that the requested comment not found
+     */
+    COMMENT_NOT_FOUND("E-0010") {
+        @Override
+        public String toString() { return "Comment Not Found"; }
+    },;
 
     private final String errorCode;
 

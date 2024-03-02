@@ -1,6 +1,7 @@
 package com.github.promentor.web;
 
 import com.github.promentor.exceptions.ErrorMessage;
+import com.github.promentor.web.dto.CreateCommentDTO;
 import com.github.promentor.web.dto.PostCreateDTO;
 import com.github.promentor.web.dto.PostGetDTO;
 import com.github.promentor.web.dto.PostUpdateDTO;
@@ -28,7 +29,6 @@ import java.net.URI;
 @Tag(name = "Post", description = "Describe the functionalities related to Post")
 @Path("/posts")
 @ApplicationScoped
-//@Authenticated
 public class PostResources {
 
     private final PostResourcesImpl postResources;
@@ -40,12 +40,28 @@ public class PostResources {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getPosts", summary = "get posts", description = "get a post with pagination")
-    public Uni<Response> getAllPost(@QueryParam("page-index") int pageIndex, @QueryParam("page-size") int pageSize) {
+    @Parameter(name = "page", description = "page index", required = true)
+    @Parameter(name = "size", description = "size of the page", required = true)
+    @APIResponses( value = {
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = PostGetDTO.class))
+            ),
+            @APIResponse(
+                    responseCode = "400",
+                    description = "Invalid Request",
+                    content =  @Content(
+                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
+            )
+    })
+    public Uni<Response> getAllPost(@QueryParam("page") int pageIndex, @QueryParam("size") int pageSize, @Context SecurityContext sec) {
         Log.info("reserved request to get posts");
         Log.debug("reserved request to get the post with pageIndex: " + pageIndex + ", pageSize: " + pageSize);
 
         return this.postResources
-                .getAllPost(pageIndex, pageSize)
+                .getAllPost(pageIndex, pageSize, sec.getUserPrincipal())
                 .map(postGetDTOList -> Response.ok(postGetDTOList).build());
     }
 
@@ -74,12 +90,12 @@ public class PostResources {
                             mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
             )
     })
-    public Uni<Response> getPostById(@PathParam("post-id") String postId) {
+    public Uni<Response> getPostById(@PathParam("post-id") String postId, @Context SecurityContext sec) {
         Log.info("reserved request to get the post");
         Log.debug("reserved request to get the post with id: " + postId);
 
         return this.postResources
-                .getPostById(postId)
+                .getPostById(postId, sec.getUserPrincipal())
                 .map(postGetDTO -> Response.ok(postGetDTO).build());
     }
 
@@ -172,6 +188,62 @@ public class PostResources {
                     return Response.ok(post).build();
                 });
 
+    }
+
+    @PUT
+    @Path("/{post-id}/like")
+    @RolesAllowed({"user"})
+    public Uni<Response> likeChangeOnPost(@PathParam("post-id") String postId, @Context SecurityContext sec) {
+        Log.info("reserved a request to like a post: " + postId);
+
+        return this.postResources
+                .likeChangeOnPost(postId, sec.getUserPrincipal())
+                .onItem()
+                .transform(response -> {
+                    Log.info("change the like of the post: " + postId);
+                    return Response.ok().build();
+                });
+    }
+
+    @GET
+    @Path("/{post-id}/comments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Response> getCommentByOfPost(@PathParam("post-id") String postId, @QueryParam("page") int pageIndex, @QueryParam("size") int pageSize) {
+
+        return this.postResources
+                .getCommentsOfPost(postId, pageIndex, pageSize)
+                .map(commentGetDTOS -> Response.ok(commentGetDTOS).build());
+    }
+
+    @GET
+    @Path("/comments/{comment-id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getCommentById", summary = "get a comment", description = "get a comment by comment id")
+    @Parameter(name = "comment-id", description = "unique id of the comment", required = true)
+    public Uni<Response> getCommentById(@PathParam("comment-id") String commentId) {
+        Log.info("reserved request to get the comment");
+        Log.debug("reserved request to get the comment with id: " + commentId);
+
+        return this.postResources
+                .getCommentById(commentId)
+                .map(commentGetDTO -> Response.ok(commentGetDTO).build());
+    }
+
+    @POST
+    @Path("/{post-id}/comments")
+    @RolesAllowed({"user"})
+    public Uni<Response> commentOnPost(
+            @PathParam("post-id") String postId,
+            @Valid CreateCommentDTO createCommentDTO,
+            @Context SecurityContext sec) {
+        Log.info("reserved a request to like a post: " + postId);
+
+        return this.postResources
+                .updateOnPost(postId, createCommentDTO, sec.getUserPrincipal())
+                .onItem()
+                .transform(id -> {
+                    return Response.created(URI.create("/posts/comments/" + id)).build();
+                });
     }
 
     @DELETE
