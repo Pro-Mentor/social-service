@@ -44,10 +44,10 @@ public class JobTypeResourcesImpl {
     public Uni<JobTypeGetDTO> getJobTypeById(String jobTypeId) {
         Log.debug("reserved request to get the job type by id: " + jobTypeId);
 
-        ObjectId postObjectId = IdConverter.getObjectId(jobTypeId);
+        ObjectId jobTypeObjectId = IdConverter.getObjectId(jobTypeId);
 
         return jobTypeRepository
-                .findById(postObjectId)
+                .findById(jobTypeObjectId)
                 .onItem().ifNull().failWith(new NotFoundException(ErrorCode.Job_TYPE_NOT_FOUND))
                 .onItem().transform(this.jobTypeMapper::toJobTypeGetDTO);
 

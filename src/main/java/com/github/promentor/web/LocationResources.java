@@ -1,10 +1,8 @@
 package com.github.promentor.web;
 
 import com.github.promentor.exceptions.ErrorMessage;
-import com.github.promentor.web.dto.JobTypeCreateDTO;
-import com.github.promentor.web.dto.JobTypeGetDTO;
-import com.github.promentor.web.dto.JobTypeUpdateDTO;
-import com.github.promentor.web.impl.JobTypeResourcesImpl;
+import com.github.promentor.web.dto.*;
+import com.github.promentor.web.impl.LocationResourcesImpl;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 import jakarta.annotation.security.RolesAllowed;
@@ -23,22 +21,23 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.net.URI;
 
-@Tag(name = "JobType", description = "Describe the functionalities related to JobType")
-@Path("/job-type")
+@Tag(name = "Location", description = "Describe the functionalities related to location")
+@Path("/locations")
 @ApplicationScoped
-public class JobTypeResources {
+public class LocationResources {
 
-    private final JobTypeResourcesImpl jobTypeResources;
+    private final LocationResourcesImpl locationResources;
 
-    public JobTypeResources(JobTypeResourcesImpl jobTypeResources) {
-        this.jobTypeResources = jobTypeResources;
+    public LocationResources(LocationResourcesImpl locationResources) {
+        this.locationResources = locationResources;
     }
+
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"user"})
-    @Operation(operationId = "createJobType", summary = "create a job type", description = "create a job type")
+    @Operation(operationId = "createLocation", summary = "create a location", description = "create a location")
     @APIResponses( value = {
             @APIResponse(
                     responseCode = "201",
@@ -60,30 +59,30 @@ public class JobTypeResources {
             ),
 
     })
-    public Uni<Response> createJobType(@Valid JobTypeCreateDTO jobTypeCreateDTO) {
-        Log.info("reserved request to create JobType");
-        Log.debug("request reserved: " + jobTypeCreateDTO);
+    public Uni<Response> createLocation(@Valid LocationCreateDTO locationCreateDTO) {
+        Log.info("reserved request to create location");
+        Log.debug("request reserved: " + locationCreateDTO);
 
-        return this.jobTypeResources
-                .createJobType(jobTypeCreateDTO)
+        return this.locationResources
+                .createLocation(locationCreateDTO)
                 .onItem()
                 .transform(id -> {
-                    Log.info("create job type with id: " + id);
-                    return Response.created(URI.create("/job-type/" + id)).build();
+                    Log.info("create location with id: " + id);
+                    return Response.created(URI.create("/location/" + id)).build();
                 });
     }
 
     @GET
-    @Path("/{job-type-id}")
+    @Path("/{location-id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "getJobTypeById", summary = "get a Job Type", description = "get a job type by job type id")
-    @Parameter(name = "job-type-id", description = "unique id of the job type", required = true)
+    @Operation(operationId = "getLocationById", summary = "get a Location", description = "get a location by location id")
+    @Parameter(name = "location-id", description = "location id of the location", required = true)
     @APIResponses( value = {
             @APIResponse(
                     responseCode = "200",
                     description = "Success",
                     content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JobTypeGetDTO.class))
+                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = LocationGetDTO.class))
             ),
             @APIResponse(
                     responseCode = "404",
@@ -98,18 +97,18 @@ public class JobTypeResources {
                             mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
             )
     })
-    public Uni<Response> getJobTypeById(@PathParam("job-type-id") String jobTypeId) {
-        Log.info("reserved request to get the job type");
-        Log.debug("reserved request to get the job type with id: " + jobTypeId);
+    public Uni<Response> getLocationById(@PathParam("location-id") String locationId) {
+        Log.info("reserved request to get the location");
+        Log.debug("reserved request to get the location with id: " + locationId);
 
-        return this.jobTypeResources
-                .getJobTypeById(jobTypeId)
-                .map(jobTypeGetDTO -> Response.ok(jobTypeGetDTO).build());
+        return this.locationResources
+                .getLocationById(locationId)
+                .map(locationGetDTO -> Response.ok(locationGetDTO).build());
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "getJobTypes", summary = "get job Types", description = "get a job types with pagination.")
+    @Operation(operationId = "getLocations", summary = "get Locations", description = "get a locations with pagination.")
     @Parameter(name = "page", description = "page index. this is 0 base index.", required = true)
     @Parameter(name = "size", description = "size of the page. if want all the items set the size to 0", required = true)
     @APIResponses( value = {
@@ -117,7 +116,7 @@ public class JobTypeResources {
                     responseCode = "200",
                     description = "Success",
                     content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JobTypeGetDTO.class))
+                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = LocationGetDTO.class))
             ),
             @APIResponse(
                     responseCode = "400",
@@ -126,28 +125,28 @@ public class JobTypeResources {
                             mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorMessage.class))
             )
     })
-    public Uni<Response> getAllJobTypes(@QueryParam("page") int pageIndex, @QueryParam("size") int pageSize) {
-        Log.info("reserved request to get job types");
-        Log.debug("reserved request to get the job types with pageIndex: " + pageIndex + ", pageSize: " + pageSize);
+    public Uni<Response> getAllLocations(@QueryParam("page") int pageIndex, @QueryParam("size") int pageSize) {
+        Log.info("reserved request to get locations");
+        Log.debug("reserved request to get the locations with pageIndex: " + pageIndex + ", pageSize: " + pageSize);
 
-        return this.jobTypeResources
-                .getAllJobTypes(pageIndex, pageSize)
-                .map(jobTypeGetDTOList -> Response.ok(jobTypeGetDTOList).build());
+        return this.locationResources
+                .getAllLocations(pageIndex, pageSize)
+                .map(locationGetDTOS -> Response.ok(locationGetDTOS).build());
     }
 
     @PUT
-    @Path("/{job-type-id}")
+    @Path("/{location-id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({"user"})
-    @Parameter(name = "job-type-id", description = "unique id of the job type", required = true)
-    @Operation(operationId = "updateJobType", summary = "update a job type", description = "update a job type")
+    @Parameter(name = "location-id", description = "unique id of the location type", required = true)
+    @Operation(operationId = "updateLocation", summary = "update a location", description = "update a location")
     @APIResponses( value = {
             @APIResponse(
                     responseCode = "200",
                     description = "Success",
                     content = @Content(
-                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JobTypeGetDTO.class))
+                            mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = LocationGetDTO.class))
             ),
             @APIResponse(
                     responseCode = "404",
@@ -169,38 +168,38 @@ public class JobTypeResources {
             ),
     })
     public Uni<Response> updateJobType(
-            @PathParam("job-type-id") String jobTypeId,
-            @Valid JobTypeUpdateDTO jobTypeUpdateDTO
+            @PathParam("location-id") String locationId,
+            @Valid LocationUpdateDTO locationUpdateDTO
     ) {
-        Log.info("reserved request to update job type: " + jobTypeId);
-        Log.debug("request reserved: " + jobTypeUpdateDTO);
+        Log.info("reserved request to update location: " + locationId);
+        Log.debug("request reserved: " + locationUpdateDTO);
 
-        return this.jobTypeResources
-                .updateJobTypeById(jobTypeId, jobTypeUpdateDTO)
+        return this.locationResources
+                .updateLocationById(locationId, locationUpdateDTO)
                 .onItem()
-                .transform(jobTypeGetDTO -> {
-                    Log.info("updated job type with id: " + jobTypeId);
-                    Log.debug("updated job type: " + jobTypeGetDTO);
-                    return Response.ok(jobTypeGetDTO).build();
+                .transform(locationGetDTO -> {
+                    Log.info("updated location with id: " + locationId);
+                    Log.debug("updated location: " + locationGetDTO);
+                    return Response.ok(locationGetDTO).build();
                 });
 
     }
 
     @DELETE
-    @Path("/{job-type-id}")
+    @Path("/{location-id}")
     @RolesAllowed({"user"})
-    @Parameter(name = "job-type-id", description = "unique id of the job type", required = true)
-    @Operation(operationId = "deleteJobType", summary = "delete a job type", description = "delete a job type by id")
-    public Uni<Response> deleteJobType(
-            @PathParam("job-type-id") String jobTypeId
+    @Parameter(name = "location-id", description = "unique id of the location", required = true)
+    @Operation(operationId = "deleteLocation", summary = "delete a location", description = "delete a location by id")
+    public Uni<Response> deleteLocation(
+            @PathParam("location-id") String locationId
     ) {
-        Log.info("reserved request to delete jobType: " + jobTypeId);
+        Log.info("reserved request to delete location: " + locationId);
 
-        return this.jobTypeResources
-                .deleteJobTypeById(jobTypeId)
+        return this.locationResources
+                .deleteLocationById(locationId)
                 .onItem()
                 .transform(response -> {
-                    Log.info("deleted job type with id: " + jobTypeId);
+                    Log.info("deleted location with id: " + locationId);
                     return Response.ok().build();
                 });
     }

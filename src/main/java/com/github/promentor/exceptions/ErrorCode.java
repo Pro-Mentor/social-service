@@ -85,6 +85,38 @@ public enum ErrorCode {
     Job_TYPE_NOT_FOUND("E-0031") {
         @Override
         public String toString() { return "Job Type Not Found"; }
+    },
+
+    /**
+     *  This code indicates that the requested job modality already available
+     */
+    Job_MODALITY_AVAILABLE("E-0040") {
+        @Override
+        public String toString() { return "Job Modality available with same name"; }
+    },
+
+    /**
+     * This code indicates that the requested job modality not found
+     */
+    Job_MODALITY_NOT_FOUND("E-0041") {
+        @Override
+        public String toString() { return "Job Modality Not Found"; }
+    },
+
+    /**
+     *  This code indicates that the requested location already available
+     */
+    LOCATION_AVAILABLE("E-0050") {
+        @Override
+        public String toString() { return "Location available with same name"; }
+    },
+
+    /**
+     * This code indicates that the requested location not found
+     */
+    LOCATION_NOT_FOUND("E-0051") {
+        @Override
+        public String toString() { return "Location Not Found"; }
     }
     ;
 
