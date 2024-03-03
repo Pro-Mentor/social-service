@@ -1,6 +1,6 @@
 package com.github.promentor.data.repository;
 
-import com.github.promentor.data.domain.PostLike;
+import com.github.promentor.data.domain.PostLikeDAO;
 import io.quarkus.mongodb.panache.reactive.ReactivePanacheMongoRepository;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @ApplicationScoped
-public class PostLikeRepository implements ReactivePanacheMongoRepository<PostLike> {
+public class PostLikeRepository implements ReactivePanacheMongoRepository<PostLikeDAO> {
 
     /**
      * this is uses to get the PostLike with given postId and username
@@ -20,7 +20,7 @@ public class PostLikeRepository implements ReactivePanacheMongoRepository<PostLi
      * @param username username of the post
      * @return PostLike object as an Optional
      */
-    public Uni<Optional<PostLike>> findPostByPostIdAndUserId(ObjectId postId, String username) {
+    public Uni<Optional<PostLikeDAO>> findPostByPostIdAndUserId(ObjectId postId, String username) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("postId", postId);

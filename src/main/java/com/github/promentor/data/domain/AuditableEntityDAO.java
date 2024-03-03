@@ -2,12 +2,12 @@ package com.github.promentor.data.domain;
 
 import java.time.Instant;
 
-public class AuditableEntity {
+public class AuditableEntityDAO {
 
     public Instant createdAt;
     public Instant updatedAt;
 
-    public AuditableEntity() {
+    public AuditableEntityDAO() {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }

@@ -66,10 +66,27 @@ public enum ErrorCode {
     /**
      * This code indicates that the requested comment not found
      */
-    COMMENT_NOT_FOUND("E-0010") {
+    COMMENT_NOT_FOUND("E-0020") {
         @Override
         public String toString() { return "Comment Not Found"; }
-    },;
+    },
+
+    /**
+     *  This code indicates that the requested job type already available
+     */
+    Job_TYPE_AVAILABLE("E-0030") {
+        @Override
+        public String toString() { return "Job Type available with same name"; }
+    },
+
+    /**
+     * This code indicates that the requested job type not found
+     */
+    Job_TYPE_NOT_FOUND("E-0031") {
+        @Override
+        public String toString() { return "Job Type Not Found"; }
+    }
+    ;
 
     private final String errorCode;
 

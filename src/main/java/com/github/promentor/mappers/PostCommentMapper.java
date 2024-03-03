@@ -1,6 +1,6 @@
 package com.github.promentor.mappers;
 
-import com.github.promentor.data.domain.PostComment;
+import com.github.promentor.data.domain.PostCommentDAO;
 import com.github.promentor.web.dto.CommentGetDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,8 +14,8 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface PostCommentMapper {
 
-    @Mapping(target = "id", expression = "java(postComment.id.toString())")
-    @Mapping(target = "postId", expression = "java(postComment.postId.toString())")
-    CommentGetDTO toCommentGetDTO(PostComment postComment);
+    @Mapping(target = "id", expression = "java(postCommentDAO.id.toString())")
+    @Mapping(target = "postId", expression = "java(postCommentDAO.postId.toString())")
+    CommentGetDTO toCommentGetDTO(PostCommentDAO postCommentDAO);
 
 }

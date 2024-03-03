@@ -4,17 +4,17 @@ import io.quarkus.mongodb.panache.common.MongoEntity;
 import org.bson.types.ObjectId;
 
 @MongoEntity(collection="PostLike")
-public class PostLike {
+public class PostLikeDAO {
 
     public ObjectId id;
     public ObjectId postId;
     public String username;
 
-    public PostLike() {
+    public PostLikeDAO() {
 
     }
 
-    public PostLike(ObjectId postId, String username) {
+    public PostLikeDAO(ObjectId postId, String username) {
         this.postId = postId;
         this.username = username;
     }

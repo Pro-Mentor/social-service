@@ -1,6 +1,6 @@
 package com.github.promentor.utils;
 
-import com.github.promentor.exceptions.custom.InvalidUUID;
+import com.github.promentor.exceptions.custom.InvalidUUIDException;
 import io.quarkus.logging.Log;
 import org.bson.types.ObjectId;
 
@@ -18,7 +18,7 @@ public class IdConverter {
             return new ObjectId(id);
         } catch (IllegalArgumentException e) {
             Log.error("Failed to transform to object id: " + e.getMessage());
-            throw new InvalidUUID();
+            throw new InvalidUUIDException();
         }
 
     }

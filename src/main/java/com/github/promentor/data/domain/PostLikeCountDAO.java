@@ -5,17 +5,17 @@ import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.types.ObjectId;
 
 @MongoEntity(collection="PostLikeCount")
-public class PostLikeCount {
+public class PostLikeCountDAO {
 
     @BsonId
     public ObjectId id;
     public int count;
 
-    public PostLikeCount() {
+    public PostLikeCountDAO() {
 
     }
 
-    public PostLikeCount(ObjectId postId) {
+    public PostLikeCountDAO(ObjectId postId) {
         this.id = postId;
         this.count = 1;
     }

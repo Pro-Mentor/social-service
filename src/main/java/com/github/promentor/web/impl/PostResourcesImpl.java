@@ -1,12 +1,12 @@
 package com.github.promentor.web.impl;
 
-import com.github.promentor.data.domain.PostComment;
+import com.github.promentor.data.domain.PostCommentDAO;
 import com.github.promentor.data.domain.PostDAO;
-import com.github.promentor.data.domain.PostLike;
-import com.github.promentor.data.domain.PostLikeCount;
+import com.github.promentor.data.domain.PostLikeDAO;
+import com.github.promentor.data.domain.PostLikeCountDAO;
 import com.github.promentor.data.repository.*;
 import com.github.promentor.exceptions.ErrorCode;
-import com.github.promentor.exceptions.custom.InvalidUUID;
+import com.github.promentor.exceptions.custom.InvalidUUIDException;
 import com.github.promentor.exceptions.custom.NotAuthorizeException;
 import com.github.promentor.exceptions.custom.NotFoundException;
 import com.github.promentor.mappers.PostCommentMapper;
@@ -51,7 +51,7 @@ public class PostResourcesImpl {
      * @param postId id of the post
      * @return the requested post As Uni
      * @throws NotFoundException if the post not available with given id
-     * @throws InvalidUUID if the give id is not a valid id
+     * @throws InvalidUUIDException if the give id is not a valid id
      */
     public Uni<PostGetDTO> getPostById(String postId, Principal principal) {
         Log.debug("reserved request to get the post by id: " + postId);
@@ -133,7 +133,7 @@ public class PostResourcesImpl {
                                 .onItem().transformToUni(unused ->
                                     this.postLikeCountRepository
                                             .findById(postObjectId)
-                                            .onItem().transformToUni(postLikeCount -> addPostLikeCount(postLikeCount, postObjectId))
+                                            .onItem().transformToUni(postLikeCountDAO -> addPostLikeCount(postLikeCountDAO, postObjectId))
                                 ).replaceWithVoid();
                     } else {
                         return postLikeRepository
@@ -152,12 +152,12 @@ public class PostResourcesImpl {
         Log.debug("reserved like on postId: " + postId + ", createCommentDTO: " + createCommentDTO);
 
         return this.postCommentRepository
-                .persist(new PostComment(
+                .persist(new PostCommentDAO(
                         IdConverter.getObjectId(postId),
                         principal.getName(),
                         createCommentDTO.comment()
                 ))
-                .onItem().transform(postComment -> postComment.id.toString());
+                .onItem().transform(postCommentDAO -> postCommentDAO.id.toString());
 
     }
 
@@ -237,12 +237,12 @@ public class PostResourcesImpl {
     private Uni<PostGetDTO> setLikeCountOfPost(ObjectId postId, PostGetDTO postGetDTO) {
 
         return this.postLikeCountRepository.findById(postId)
-                .onItem().transform(postLikeCount -> {
-                    Log.debug("reserved PostLikeCount: " + postLikeCount);
+                .onItem().transform(postLikeCountDAO -> {
+                    Log.debug("reserved PostLikeCount: " + postLikeCountDAO);
 
                     // if there is a postLikeCount for the post return the like count
                     // if not return the 0
-                    postGetDTO.setNumberOfLikes(postLikeCount != null ? postLikeCount.count : 0);
+                    postGetDTO.setNumberOfLikes(postLikeCountDAO != null ? postLikeCountDAO.count : 0);
 
                     return postGetDTO;
                 });
@@ -266,23 +266,23 @@ public class PostResourcesImpl {
         return Uni.createFrom().item(postGetDTO);
     }
 
-    private Uni<PostLike> persistPostLike(ObjectId postId, String username) {
+    private Uni<PostLikeDAO> persistPostLike(ObjectId postId, String username) {
         return postLikeRepository
-                .persist(new PostLike(postId, username));
+                .persist(new PostLikeDAO(postId, username));
     }
 
-    private Uni<PostLikeCount> addPostLikeCount(PostLikeCount postLikeCount, ObjectId postId) {
-        if (postLikeCount == null) {
-            postLikeCount = new PostLikeCount(postId);
-            return this.postLikeCountRepository.persist(postLikeCount);
+    private Uni<PostLikeCountDAO> addPostLikeCount(PostLikeCountDAO postLikeCountDAO, ObjectId postId) {
+        if (postLikeCountDAO == null) {
+            postLikeCountDAO = new PostLikeCountDAO(postId);
+            return this.postLikeCountRepository.persist(postLikeCountDAO);
         }
-        postLikeCount.addLike();
-        return this.postLikeCountRepository.update(postLikeCount);
+        postLikeCountDAO.addLike();
+        return this.postLikeCountRepository.update(postLikeCountDAO);
     }
 
-    private Uni<PostLikeCount> removePostLikeCount(PostLikeCount postLikeCount) {
-        postLikeCount.removeLike();
-        return this.postLikeCountRepository.update(postLikeCount);
+    private Uni<PostLikeCountDAO> removePostLikeCount(PostLikeCountDAO postLikeCountDAO) {
+        postLikeCountDAO.removeLike();
+        return this.postLikeCountRepository.update(postLikeCountDAO);
     }
 
 }

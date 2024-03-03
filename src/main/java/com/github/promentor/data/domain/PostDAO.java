@@ -4,7 +4,7 @@ import io.quarkus.mongodb.panache.common.MongoEntity;
 import org.bson.types.ObjectId;
 
 @MongoEntity(collection="post")
-public class PostDAO extends AuditableEntity {
+public class PostDAO extends AuditableEntityDAO {
 
     public ObjectId id;
     public String description;

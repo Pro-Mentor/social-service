@@ -4,9 +4,9 @@ import com.github.promentor.exceptions.CustomException;
 import com.github.promentor.exceptions.ErrorCode;
 import jakarta.ws.rs.core.Response.Status;
 
-public class InvalidUUID extends CustomException {
+public class InvalidUUIDException extends CustomException {
 
-    public InvalidUUID() {
+    public InvalidUUIDException() {
         super(ErrorCode.INVALID_OBJECT, ErrorCode.INVALID_OBJECT.toString(), Status.BAD_REQUEST);
     }
 
