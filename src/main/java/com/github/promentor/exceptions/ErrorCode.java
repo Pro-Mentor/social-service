@@ -117,7 +117,38 @@ public enum ErrorCode {
     LOCATION_NOT_FOUND("E-0051") {
         @Override
         public String toString() { return "Location Not Found"; }
-    }
+    },
+
+    /**
+     *  This code indicates that the requested tag type already available
+     */
+    TAG_TYPE_AVAILABLE("E-0060") {
+        @Override
+        public String toString() { return "Tag Type available with same name"; }
+    },
+
+    /**
+     * This code indicates that the requested tag type not found
+     */
+    TAG_TYPE_NOT_FOUND("E-0061") {
+        @Override
+        public String toString() { return "Tag Type Not Found"; }
+    },
+
+    /**
+     * This code indicates that the requested job not found
+     */
+    JOB_NOT_FOUND("E-0070") {
+        @Override
+        public String toString() { return "Job Not Found"; }
+    },
+    /**
+     * This code indicates that the requested post is not a requested user post
+     */
+    NOT_JOB_OWNER("E-0071") {
+        @Override
+        public String toString() { return "Don't have access to modify the job."; }
+    },
     ;
 
     private final String errorCode;
