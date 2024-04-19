@@ -83,9 +83,9 @@ public class EventResourcesImpl {
                     .findAll()
                     .stream()
                     .filter(jobDAO -> (
-                            (locations.size() == 0 || locations.contains(jobDAO.location.id.toString())) &&
-                            (modes.size() == 0 || modes.contains(jobDAO.mode.id.toString())) &&
-                                    (tags.size() == 0 || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
+                            (locations.size() == 0 || locations.getFirst().isBlank() || locations.contains(jobDAO.location.id.toString())) &&
+                            (modes.size() == 0 || modes.getFirst().isBlank() || modes.contains(jobDAO.mode.id.toString())) &&
+                                    (tags.size() == 0 || tags.getFirst().isBlank() || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
                                     (search == null || search.isBlank() || jobDAO.title.contains(search) || jobDAO.description.contains(search) || jobDAO.companyName.contains(search))
                     ))
                     .collect().asList();
@@ -96,9 +96,9 @@ public class EventResourcesImpl {
                 .page(pageIndex, pageSize)
                 .stream()
                 .filter(jobDAO -> (
-                                (locations.size() == 0 || locations.contains(jobDAO.location.id.toString())) &&
-                                        (modes.size() == 0 || modes.contains(jobDAO.mode.id.toString())) &&
-                                        (tags.size() == 0 || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
+                                (locations.size() == 0 || locations.getFirst().isBlank() || locations.contains(jobDAO.location.id.toString())) &&
+                                        (modes.size() == 0 || modes.getFirst().isBlank() || modes.contains(jobDAO.mode.id.toString())) &&
+                                        (tags.size() == 0  || tags.getFirst().isBlank() || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
                                         (search == null || search.isBlank() || jobDAO.title.contains(search) || jobDAO.description.contains(search) || jobDAO.companyName.contains(search))
                         )
                 )

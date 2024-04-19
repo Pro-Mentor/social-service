@@ -90,15 +90,18 @@ public class JobResourcesImpl {
 
     public Uni<List<JobDAO>> getAllJobs(int pageIndex, int pageSize, List<String> locations, List<String> modalities, List<String> types, List<String> tags, String search) {
 
+        Log.info("-----------------" + tags);
+
         if (pageSize == 0) {
+            Log.info("0000000000000000  === " + tags.size());
             return jobRepository
                     .findAll()
                     .stream()
                     .filter(jobDAO -> (
-                            (locations.size() == 0 || locations.contains(jobDAO.location.id.toString())) &&
-                            (modalities.size() == 0 || modalities.contains(jobDAO.modality.id.toString())) &&
-                            (types.size() == 0 || types.contains(jobDAO.type.id.toString())) &&
-                                    (tags.size() == 0 || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
+                            (locations.size() == 0 || locations.getFirst().isBlank() || locations.contains(jobDAO.location.id.toString())) &&
+                            (modalities.size() == 0 || modalities.getFirst().isBlank() || modalities.contains(jobDAO.modality.id.toString())) &&
+                            (types.size() == 0 || types.getFirst().isBlank() || types.contains(jobDAO.type.id.toString())) &&
+                                    (tags.size() == 0 || tags.getFirst().isBlank() || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
                                     (search == null || search.isBlank() || jobDAO.title.contains(search) || jobDAO.description.contains(search) || jobDAO.companyName.contains(search))
                     ))
                     .collect().asList();
@@ -109,10 +112,10 @@ public class JobResourcesImpl {
                 .page(pageIndex, pageSize)
                 .stream()
                 .filter(jobDAO -> (
-                                (locations.size() == 0 || locations.contains(jobDAO.location.id.toString())) &&
-                                        (modalities.size() == 0 || modalities.contains(jobDAO.modality.id.toString())) &&
-                                        (types.size() == 0 || types.contains(jobDAO.type.id.toString())) &&
-                                        (tags.size() == 0 || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
+                                (locations.size() == 0 || locations.getFirst().isBlank() || locations.contains(jobDAO.location.id.toString())) &&
+                                        (modalities.size() == 0 || modalities.getFirst().isBlank() || modalities.contains(jobDAO.modality.id.toString())) &&
+                                        (types.size() == 0 || types.getFirst().isBlank() || types.contains(jobDAO.type.id.toString())) &&
+                                        (tags.size() == 0 || tags.getFirst().isBlank() || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
                                         (search == null || search.isBlank() || jobDAO.title.contains(search) || jobDAO.description.contains(search) || jobDAO.companyName.contains(search))
                         )
                 )
