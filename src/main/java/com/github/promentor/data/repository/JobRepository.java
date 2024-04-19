@@ -7,5 +7,4 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class JobRepository implements ReactivePanacheMongoRepository<JobDAO> {
 
-
 }

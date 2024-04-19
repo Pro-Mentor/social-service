@@ -15,6 +15,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.types.ObjectId;
 
 import java.security.Principal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,14 +28,16 @@ public class JobResourcesImpl {
     private final LocationRepository locationRepository;
     private final JobModalityRepository jobModalityRepository;
     private final JobRepository jobRepository;
+    private final JobCountTrackerRepository jobCountTrackerRepository;
     private final TagMapper tagMapper;
 
-    public JobResourcesImpl(TagRepository tagRepository, JobTypeRepository jobTypeRepository, LocationRepository locationRepository, JobModalityRepository jobModalityRepository, JobRepository jobRepository, TagMapper tagMapper) {
+    public JobResourcesImpl(TagRepository tagRepository, JobTypeRepository jobTypeRepository, LocationRepository locationRepository, JobModalityRepository jobModalityRepository, JobRepository jobRepository, JobCountTrackerRepository jobCountTrackerRepository, TagMapper tagMapper) {
         this.tagRepository = tagRepository;
         this.jobTypeRepository = jobTypeRepository;
         this.locationRepository = locationRepository;
         this.jobModalityRepository = jobModalityRepository;
         this.jobRepository = jobRepository;
+        this.jobCountTrackerRepository = jobCountTrackerRepository;
         this.tagMapper = tagMapper;
     }
 
@@ -69,7 +73,13 @@ public class JobResourcesImpl {
                                                     a, jobCreateDTO.companyName(),
                                                             principal.getName()
                                             ))
-                                                    .onItem().transform(jobPersistObject -> jobPersistObject.id.toString());
+                                                    .onItem().transformToUni(jobPersistObject -> {
+                                                        return jobCountTrackerRepository.addCount(jobPersistObject.createdAt.truncatedTo(ChronoUnit.DAYS))
+                                                                .onItem().transform(jobCountTracker -> {
+                                                                    return jobPersistObject.id.toString();
+                                                                });
+
+                                                    });
 
                                         });
                             });
@@ -90,10 +100,7 @@ public class JobResourcesImpl {
 
     public Uni<List<JobDAO>> getAllJobs(int pageIndex, int pageSize, List<String> locations, List<String> modalities, List<String> types, List<String> tags, String search) {
 
-        Log.info("-----------------" + tags);
-
         if (pageSize == 0) {
-            Log.info("0000000000000000  === " + tags.size());
             return jobRepository
                     .findAll()
                     .stream()
@@ -158,7 +165,12 @@ public class JobResourcesImpl {
                     if (!jobDAO.createdBy.equals(principal.getName())) {
                         return Uni.createFrom().failure(new NotAuthorizeException(ErrorCode.NOT_JOB_OWNER));
                     }
-                    return jobRepository.delete(jobDAO);
+                    return jobRepository.delete(jobDAO)
+                            .onItem().transformToUni(unused -> {
+                                return jobCountTrackerRepository
+                                        .removeCount(jobDAO.createdAt.truncatedTo(ChronoUnit.DAYS))
+                                        .onItem().transform(jobCountTracker -> unused);
+                            });
                 });
     }
 

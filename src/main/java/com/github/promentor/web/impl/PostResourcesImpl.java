@@ -1,9 +1,6 @@
 package com.github.promentor.web.impl;
 
-import com.github.promentor.data.domain.PostCommentDAO;
-import com.github.promentor.data.domain.PostDAO;
-import com.github.promentor.data.domain.PostLikeDAO;
-import com.github.promentor.data.domain.PostLikeCountDAO;
+import com.github.promentor.data.domain.*;
 import com.github.promentor.data.repository.*;
 import com.github.promentor.exceptions.ErrorCode;
 import com.github.promentor.exceptions.custom.InvalidUUIDException;
@@ -20,6 +17,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.types.ObjectId;
 
 import java.security.Principal;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +33,9 @@ public class PostResourcesImpl {
     private final PostLikeRepository postLikeRepository;
     private final PostLikeCountRepository postLikeCountRepository;
     private final PostCommentRepository postCommentRepository;
+    private final PostCountTrackerRepository postCountTrackerRepositoryl;
 
-    public PostResourcesImpl(PostMapper postMapper, PostCommentMapper postCommentMapper, PostRepository postRepository, UserRepository userRepository, PostLikeRepository postLikeRepository, PostLikeCountRepository postLikeCountRepository, PostCommentRepository postCommentRepository) {
+    public PostResourcesImpl(PostMapper postMapper, PostCommentMapper postCommentMapper, PostRepository postRepository, UserRepository userRepository, PostLikeRepository postLikeRepository, PostLikeCountRepository postLikeCountRepository, PostCommentRepository postCommentRepository, PostCountTrackerRepository postCountTrackerRepositoryl) {
         this.postMapper = postMapper;
         this.postCommentMapper = postCommentMapper;
         this.postRepository = postRepository;
@@ -44,6 +43,7 @@ public class PostResourcesImpl {
         this.postLikeRepository = postLikeRepository;
         this.postLikeCountRepository = postLikeCountRepository;
         this.postCommentRepository = postCommentRepository;
+        this.postCountTrackerRepositoryl = postCountTrackerRepositoryl;
     }
 
     /**
@@ -178,7 +178,13 @@ public class PostResourcesImpl {
 
                     return this.postRepository.persist(post)
                             .onItem()
-                            .transform(postDAO -> postDAO.id.toString());
+                            .transformToUni(postDAO -> {
+                                return postCountTrackerRepositoryl
+                                        .addCount(postDAO.createdAt.truncatedTo(ChronoUnit.DAYS))
+                                        .onItem().transform(postCountTracker -> {
+                                            return postDAO.id.toString();
+                                        });
+                            });
                 });
 
     }
@@ -224,7 +230,12 @@ public class PostResourcesImpl {
                         return Uni.createFrom().failure(new NotAuthorizeException(ErrorCode.NOT_POST_OWNER));
                     }
 
-                    return postRepository.delete(postDAO);
+                    return postRepository.delete(postDAO)
+                            .onItem().transformToUni(unused -> {
+                                return postCountTrackerRepositoryl
+                                        .removeCount(postDAO.createdAt.truncatedTo(ChronoUnit.DAYS))
+                                        .onItem().transform(postCountTracker -> unused);
+                            });
                 });
     }
 

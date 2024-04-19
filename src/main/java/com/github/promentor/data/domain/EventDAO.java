@@ -31,6 +31,5 @@ public class EventDAO extends AuditableEntityDAO{
         this.location = location;
         this.mode = mode;
         this.createdBy = createdBy;
-        this.tags = tags;
     }
 }
