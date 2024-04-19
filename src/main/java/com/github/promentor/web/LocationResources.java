@@ -1,7 +1,9 @@
 package com.github.promentor.web;
 
 import com.github.promentor.exceptions.ErrorMessage;
-import com.github.promentor.web.dto.*;
+import com.github.promentor.web.dto.LocationCreateDTO;
+import com.github.promentor.web.dto.LocationGetDTO;
+import com.github.promentor.web.dto.LocationUpdateDTO;
 import com.github.promentor.web.impl.LocationResourcesImpl;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
@@ -18,8 +20,6 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-
-import java.net.URI;
 
 @Tag(name = "Location", description = "Describe the functionalities related to location")
 @Path("/locations")
@@ -66,10 +66,7 @@ public class LocationResources {
         return this.locationResources
                 .createLocation(locationCreateDTO)
                 .onItem()
-                .transform(id -> {
-                    Log.info("create location with id: " + id);
-                    return Response.created(URI.create("/location/" + id)).build();
-                });
+                .transform(locationGetDTO -> Response.ok(locationGetDTO).build());
     }
 
     @GET

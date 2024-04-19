@@ -26,7 +26,7 @@ public class JobModalityResourcesImpl {
     }
 
 
-    public Uni<String> createJobModality(JobModalityCreateDTO jobModalityCreateDTO) {
+    public Uni<JobModalityGetDTO> createJobModality(JobModalityCreateDTO jobModalityCreateDTO) {
 
         return jobModalityRepository
                 .findByKey(jobModalityCreateDTO.key())
@@ -36,7 +36,7 @@ public class JobModalityResourcesImpl {
                         return Uni.createFrom().failure(new AlreadyAvailableException(ErrorCode.Job_MODALITY_AVAILABLE));
                     }
                    return jobModalityRepository.persist(this.jobModalityMapper.toJobModalityDAO(jobModalityCreateDTO))
-                           .onItem().transform(jobModalityPersistObject -> jobModalityPersistObject.id.toString());
+                           .onItem().transform(jobModalityMapper::toJobModalityGetDTO);
                 });
     }
 

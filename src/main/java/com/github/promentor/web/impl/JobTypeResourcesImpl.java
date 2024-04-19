@@ -27,7 +27,7 @@ public class JobTypeResourcesImpl {
         this.jobTypeMapper = jobTypeMapper;
     }
 
-    public Uni<String> createJobType(JobTypeCreateDTO jobTypeCreateDTO) {
+    public Uni<JobTypeGetDTO> createJobType(JobTypeCreateDTO jobTypeCreateDTO) {
 
         return jobTypeRepository
                 .findByKey(jobTypeCreateDTO.key())
@@ -37,7 +37,7 @@ public class JobTypeResourcesImpl {
                         return Uni.createFrom().failure(new AlreadyAvailableException(ErrorCode.Job_TYPE_AVAILABLE));
                     }
                    return jobTypeRepository.persist(this.jobTypeMapper.toJobTypeDAO(jobTypeCreateDTO))
-                           .onItem().transform(jobTypePersistObject -> jobTypePersistObject.id.toString());
+                           .onItem().transform(jobTypeMapper::toJobTypeGetDTO);
                 });
     }
 

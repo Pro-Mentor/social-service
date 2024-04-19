@@ -66,10 +66,7 @@ public class JobModalityResources {
         return this.jobModalityResources
                 .createJobModality(jobModalityCreateDTO)
                 .onItem()
-                .transform(id -> {
-                    Log.info("create job modality with id: " + id);
-                    return Response.created(URI.create("/job-modality/" + id)).build();
-                });
+                .transform(jobModalityGetDTO -> Response.ok(jobModalityGetDTO).build());
     }
 
     @GET

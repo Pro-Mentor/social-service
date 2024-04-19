@@ -65,10 +65,7 @@ public class TagResources {
         return this.tagResources
                 .createTags(tagCreateDTO)
                 .onItem()
-                .transform(id -> {
-                    Log.info("create tag with id: " + id);
-                    return Response.created(URI.create("/tags/" + id)).build();
-                });
+                .transform(tagGetDTO -> Response.ok(tagCreateDTO).build());
     }
 
     @GET

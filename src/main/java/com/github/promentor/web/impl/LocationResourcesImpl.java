@@ -26,7 +26,7 @@ public class LocationResourcesImpl {
     }
 
 
-    public Uni<String> createLocation(LocationCreateDTO locationCreateDTO) {
+    public Uni<LocationGetDTO> createLocation(LocationCreateDTO locationCreateDTO) {
 
         return locationRepository
                 .findByLocation(locationCreateDTO.location())
@@ -36,7 +36,7 @@ public class LocationResourcesImpl {
                         return Uni.createFrom().failure(new AlreadyAvailableException(ErrorCode.LOCATION_AVAILABLE));
                     }
                    return locationRepository.persist(this.locationMapper.toLocationDAO(locationCreateDTO))
-                           .onItem().transform(locationPersistObject -> locationPersistObject.id.toString());
+                           .onItem().transform(locationMapper::toLocationGetDTO);
                 });
     }
 

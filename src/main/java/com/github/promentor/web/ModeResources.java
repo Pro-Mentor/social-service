@@ -19,8 +19,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import java.net.URI;
-
 @Tag(name = "Mode", description = "Describe the functionalities related to Modes")
 @Path("/modes")
 @ApplicationScoped
@@ -64,10 +62,7 @@ public class ModeResources {
         return this.modeResources
                 .createModes(modeCreateDTO)
                 .onItem()
-                .transform(id -> {
-                    Log.info("create mode with id: " + id);
-                    return Response.created(URI.create("/modes/" + id)).build();
-                });
+                .transform(modeGetDTO -> Response.ok(modeGetDTO).build());
     }
 
     @GET
@@ -168,9 +163,7 @@ public class ModeResources {
         return this.modeResources
                 .updateModeById(modeId, modeUpdateDTO)
                 .onItem()
-                .transform(tagGetDTO -> {
-                    return Response.ok(tagGetDTO).build();
-                });
+                .transform(tagGetDTO -> Response.ok(tagGetDTO).build());
 
     }
 
@@ -186,8 +179,6 @@ public class ModeResources {
         return this.modeResources
                 .deleteModeById(modeId)
                 .onItem()
-                .transform(response -> {
-                    return Response.ok().build();
-                });
+                .transform(response -> Response.ok().build());
     }
 }

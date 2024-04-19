@@ -25,7 +25,7 @@ public class ModeResourcesImpl {
     }
 
 
-    public Uni<String> createModes(ModeCreateDTO modeCreateDTO) {
+    public Uni<ModeGetDTO> createModes(ModeCreateDTO modeCreateDTO) {
 
         return modeRepository
                 .findByKey(modeCreateDTO.key())
@@ -35,7 +35,7 @@ public class ModeResourcesImpl {
                         return Uni.createFrom().failure(new AlreadyAvailableException(ErrorCode.TAG_TYPE_AVAILABLE));
                     }
                    return modeRepository.persist(this.modeMapper.toModeDAO(modeCreateDTO))
-                           .onItem().transform(modeTypePersistObject -> modeTypePersistObject.id.toString());
+                           .onItem().transform(this.modeMapper::toModeGetDTO);
                 });
     }
 

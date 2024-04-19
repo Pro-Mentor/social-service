@@ -21,8 +21,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import java.net.URI;
-
 @Tag(name = "JobType", description = "Describe the functionalities related to JobType")
 @Path("/job-type")
 @ApplicationScoped
@@ -67,10 +65,7 @@ public class JobTypeResources {
         return this.jobTypeResources
                 .createJobType(jobTypeCreateDTO)
                 .onItem()
-                .transform(id -> {
-                    Log.info("create job type with id: " + id);
-                    return Response.created(URI.create("/job-type/" + id)).build();
-                });
+                .transform(jobTypeGetDTO -> Response.ok(jobTypeGetDTO).build());
     }
 
     @GET

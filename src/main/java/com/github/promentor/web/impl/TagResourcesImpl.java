@@ -25,7 +25,7 @@ public class TagResourcesImpl {
         this.tagMapper = tagMapper;
     }
 
-    public Uni<String> createTags(TagCreateDTO tagCreateDTO) {
+    public Uni<TagGetDTO> createTags(TagCreateDTO tagCreateDTO) {
 
         return tagRepository
                 .findByKey(tagCreateDTO.key())
@@ -35,7 +35,7 @@ public class TagResourcesImpl {
                         return Uni.createFrom().failure(new AlreadyAvailableException(ErrorCode.TAG_TYPE_AVAILABLE));
                     }
                    return tagRepository.persist(this.tagMapper.toTagDAO(tagCreateDTO))
-                           .onItem().transform(tagTypePersistObject -> tagTypePersistObject.id.toString());
+                           .onItem().transform(this.tagMapper::toTagGetDTO);
                 });
     }
 
