@@ -52,7 +52,7 @@ public class JobResourcesImpl {
                                 return jobModalityRepository
                                         .findById(IdConverter.getObjectId(jobCreateDTO.modalityId()))
                                         .onItem()
-                                        .ifNull().failWith(new NotFoundException(ErrorCode.Job_TYPE_NOT_FOUND))
+                                        .ifNull().failWith(new NotFoundException(ErrorCode.Job_MODALITY_NOT_FOUND))
                                         .onItem().transformToUni(jobModalityDAO -> {
 
                                             var a = jobCreateDTO
