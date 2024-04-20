@@ -86,7 +86,7 @@ public class EventResourcesImpl {
                             (locations.size() == 0 || locations.getFirst().isBlank() || locations.contains(jobDAO.location.id.toString())) &&
                             (modes.size() == 0 || modes.getFirst().isBlank() || modes.contains(jobDAO.mode.id.toString())) &&
                                     (tags.size() == 0 || tags.getFirst().isBlank() || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
-                                    (search == null || search.isBlank() || jobDAO.title.contains(search) || jobDAO.description.contains(search) || jobDAO.companyName.contains(search))
+                                    (search == null || search.isBlank() || jobDAO.title.toLowerCase().contains(search.toLowerCase()) || jobDAO.description.toLowerCase().contains(search.toLowerCase()) || jobDAO.companyName.toLowerCase().contains(search.toLowerCase()))
                     ))
                     .collect().asList();
         }
@@ -99,7 +99,7 @@ public class EventResourcesImpl {
                                 (locations.size() == 0 || locations.getFirst().isBlank() || locations.contains(jobDAO.location.id.toString())) &&
                                         (modes.size() == 0 || modes.getFirst().isBlank() || modes.contains(jobDAO.mode.id.toString())) &&
                                         (tags.size() == 0  || tags.getFirst().isBlank() || abc(tags, jobDAO.tags.stream().map(tagDAO -> tagDAO.id.toString()).toList())) &&
-                                        (search == null || search.isBlank() || jobDAO.title.contains(search) || jobDAO.description.contains(search) || jobDAO.companyName.contains(search))
+                                        (search == null || search.isBlank() || jobDAO.title.toLowerCase().contains(search.toLowerCase()) || jobDAO.description.toLowerCase().contains(search.toLowerCase()) || jobDAO.companyName.toLowerCase().contains(search.toLowerCase()))
                         )
                 )
                 .collect().asList();
