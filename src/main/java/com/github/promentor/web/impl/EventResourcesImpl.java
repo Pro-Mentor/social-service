@@ -56,7 +56,8 @@ public class EventResourcesImpl {
                                                     locationDAO,
                                                     modeDAO,
                                                 principal.getName(),
-                                                    a
+                                                    a,
+                                        eventCreateDTO.time()
                                         ))
                                         .onItem().transform(eventPersistObject -> eventPersistObject.id.toString());
 

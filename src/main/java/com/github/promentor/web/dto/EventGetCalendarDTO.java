@@ -7,6 +7,7 @@ public record EventGetCalendarDTO(
         String title,
         String desc,
         Instant start,
-        Instant end
+        Instant end,
+        Instant time
 ) {
 }
