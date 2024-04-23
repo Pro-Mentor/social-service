@@ -65,7 +65,7 @@ public class TagResources {
         return this.tagResources
                 .createTags(tagCreateDTO)
                 .onItem()
-                .transform(tagGetDTO -> Response.ok(tagCreateDTO).build());
+                .transform(tagGetDTO -> Response.ok(tagGetDTO).build());
     }
 
     @GET
